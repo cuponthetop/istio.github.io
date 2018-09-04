@@ -1,5 +1,5 @@
 ---
-title: What is Istio?
+title: Istio가 뭔가요?
 description: Introduces Istio, the problems it solves, its high-level architecture and design goals.
 weight: 15
 aliases:
