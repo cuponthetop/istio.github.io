@@ -184,42 +184,39 @@ Q: *어플리케이션 수준의 라이브러리와 Envoy가 함께 사용되면
 이 경우에 어플리케이션이 서비스에 대한 API 요청의 타임아웃을 5초로 지정하고 Envoy는 10초로 지정되어 있다면, 어플리케이션의 타임아웃이 먼저 발동됩니다.
 유사하게, Envoy의 회로 차단기가 어플리케이션의 회로 차단기보다 먼저 발동하면, 그 서비스에 대한 API 요청은 Envoy로부터 503을 받게 될 것입니다.
 
-## 실패 주입<sub>Fault injection</sub>
+## 결함 주입<sub>Fault injection</sub>
 
-While the Envoy sidecar/proxy provides a host of [failure recovery mechanisms](#handling-failures) to services running on Istio, it is still imperative to test the end-to-end failure recovery capability of the
-application as a whole.
-Misconfigured failure recovery policies (for example, incompatible/restrictive timeouts across service calls) could result in continued unavailability of critical services in the application, resulting in poor user experience.
+Envoy sidecar/proxy가 Istio에서 실행되는 서비스에 대해 여러 [실패 복구 메커니즘](#handling-failures)을 제공하지만 어플리케이션 전체의 end-to-end 실패 복구 능력에 대한 테스트를 하는 것도 필수이다.
+잘못 설정된 실패 복구 정책(예를 들면, 서비스 요청 사이의 호환되지 않거나 제한적인 타임아웃과 같은)은 어플리케이션의 핵심 서비스에 대한 지속된 비가용성을 초래하여 나쁜 사용자 경험을 제공하게 될 수 있다.
 
-Istio enables protocol-specific fault injection into the network, instead of killing pods or delaying or corrupting packets at the TCP layer.
-The rationale is that the failures observed by the application layer are the same regardless of network level failures, and that more meaningful failures can be injected at the application layer (for example, HTTP error codes) to exercise the resilience of an application.
+Istio는 pod를 죽이거나 TCP 단의 패킷을 지연시키거나 오염시키지 않고 프로토콜 특화된 네트워크 결함 주입을 사용할 수 있게 합니다.
+이렇게 하는 이유는 네트워크 수준 실패의 종류에 관계없이 어플리케이션 단에서 관측되는 실패는 같고, (HTTP 에러 코드와 같은) 더 의미있는 실패가 어플리케이션 단에서 주입되어 어플리케이션의 회복을 연습해 볼 수 있기 때문입니다.
 
-You can configure faults to be injected into requests that match specific conditions.
-You can further restrict the percentage of requests that should be subjected to faults.
-Two types of faults can be injected: delays and aborts.
-Delays are timing failures, mimicking increased network latency, or an overloaded upstream service.
-Aborts are crash failures that mimic failures in upstream services.
-Aborts usually manifest in the form of HTTP error codes or TCP connection failures.
+특정한 조건에 맞는 요청에 대해 결함이 주입되도록 설정할 수 있습니다.
+결함이 주입되는 요청의 비율 또한 지정할 수 있습니다.
+두 가지 종류의 결함이 주입될 수 있습니다: 지연과 중단.
 
-## Rule configuration
+지연은 타이밍 실패로, 증가된 네트워크 지연 시간을 흉내내거나 과부하된 상류 서비스를 흉내냅니다.
+중단은 상류 서비스의 실패를 흉내내는 크래시 실패<sub>crash failure</sub>입니다.
+중단은 주로 HTTP 에러 코드나 TCP 연결 실패의 형태로 나타납니다.
 
-Istio provides a simple configuration model to control how API calls and layer-4 traffic flow across various services in an application deployment.
-The configuration model allows you to configure service-level properties such as circuit breakers, timeouts, and retries, as well as set up common continuous deployment tasks such as canary rollouts, A/B testing, staged rollouts with %-based traffic splits, etc.
+## 규칙 설정<sub>Rule configuration</sub>
 
-There are four traffic management configuration resources in Istio:
-`VirtualService`, `DestinationRule`, `ServiceEntry`, and `Gateway`:
+Istio는 어플리케이션 배포에서 서비스 사이의 API 요청과 전송 계층의 트래픽 흐름을 제어하기 위한 간편한 설정 모델을 제공합니다.
+설정 모델은 회로 차단, 타임아웃, 재시도와 같은 서비스 수준의 속성 설정과 canary rollout, A/B 테스팅, % 기반으로 트래픽이 분리된 staged rollout과 같은 일반적인 지속적 배포<sub>continuous deployment</sub> 작업을 할 수 있게 해줍니다.
 
-* A [`VirtualService`](/docs/reference/config/istio.networking.v1alpha3/#VirtualService)
-defines the rules that control how requests for a service are routed within an Istio service mesh.
+Istio에는 네 가지의 트래픽 관리 설정 자원<sub>resource</sub>이 있습니다:
+`VirtualService`, `DestinationRule`, `ServiceEntry`, `Gateway`:
 
-* A [`DestinationRule`](/docs/reference/config/istio.networking.v1alpha3/#DestinationRule)
-configures the set of policies to be applied to a request after `VirtualService` routing has occurred.
+* [`VirtualService`](/docs/reference/config/istio.networking.v1alpha3/#VirtualService)는 Istio 서비스 메쉬 내부에서 서비스에 대한 요청이 라우팅 되는 지를 제어하는 규칙을 정의합니다.
 
-* A [`ServiceEntry`](/docs/reference/config/istio.networking.v1alpha3/#ServiceEntry) is commonly used to enable requests to services outside of an Istio service mesh.
+* [`DestinationRule`](/docs/reference/config/istio.networking.v1alpha3/#DestinationRule)은 요청에 대해 `VirtualService` 라우팅이 이루어진 뒤에 적용될 정책들을 설정합니다.
 
-* A [`Gateway`](/docs/reference/config/istio.networking.v1alpha3/#Gateway)
-configures a load balancer for HTTP/TCP traffic, most commonly operating at the edge of the mesh to enable ingress traffic for an application.
+* [`ServiceEntry`](/docs/reference/config/istio.networking.v1alpha3/#ServiceEntry)는 Istio 서비스 메쉬의 외부에 있는 서비스에 대한 요청을 가능하게 하는데 주로 쓰입니다.
 
-For example, you can implement a simple rule to send 100% of incoming traffic for a *reviews* service to version "v1" by using a `VirtualService` configuration as follows:
+* [`Gateway`](/docs/reference/config/istio.networking.v1alpha3/#Gateway)는 메쉬의 가장자리에서 동작하여 어플리케이션에 트래픽 유입이 가능하게 하는 HTTP/TCP 트래픽에 대한 로드 밸런서를 설정합니다.
+
+예를 들면, *reviews* 서비스에 유입되는 트래픽의 100%를 "v1" 버전으로 보내는 간단한 규칙을 아래의 `VirtualService` 설정을 사용해 만들 수 있다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -236,13 +233,14 @@ spec:
         subset: v1
 {{< /text >}}
 
-This configuration says that traffic sent to the *reviews* service (specified in the `hosts` field) should be routed to the v1 subset of the underlying *reviews* service instances.
-The route `subset` specifies the name of a defined subset in a corresponding destination rule configuration.
+이 설정은 (`hosts` 필드에 지정된) *reviews* 서비스로 보내진 트래픽이 *reviews* 서비스 인스턴스 중 v1 subset으로 전달되어야 한다고 표현하고 있습니다.
+route 항목의 `subset` 필드가 destination 규칙에서 목적지로 정의된 subset 을 지정합니다.
 
-A subset specifies one or more labels that identify version-specific instances.
-For example, in a Kubernetes deployment of Istio, "version: v1" indicates that only pods containing the label "version: v1" will receive traffic.
+subset은 버전 특화된 인스턴스를 나타내는 하나 또는 하나 이상의 라벨을 지정합니다.
+예로, Istio의 Kubernetes 배포에서, "version: v1"은 "version: v1" 라벨을 가지고 있는 pod만 트래픽을 받는 것은 나타냅니다.
 
-In a `DestinationRule`, you can then add additional policies. For example, the following definition specifies to use the random load balancing mode:
+`DestinationRule`으로 정책을 더 추가할 수 있습니다.
+예로, 아래의 정의는 랜덤 로드 밸런싱<sub>random load balancing</sub> 모드를 사용하도록 지정합니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -263,23 +261,23 @@ spec:
       version: v2
 {{< /text >}}
 
-Rules can be configured using the `kubectl` command.
-See the [configuring request routing task](/docs/tasks/traffic-management/request-routing/) for examples.
+규칙은 `kubectl` 명령어를 사용하여 설정할 수 있습니다.
+[요청 라우팅 설정 작업](/docs/tasks/traffic-management/request-routing/)에서 더 많은 예를 볼 수 있습니다.
 
-The following sections provide a basic overview of the traffic management configuration resources.
-See [networking reference](/docs/reference/config/istio.networking.v1alpha3/) for detailed information.
+이어지는 절은 트래픽 관리 설정 자원에 대한 기초적인 개요를 제공합니다.
+보다 자세한 정보는 [네트워킹 레퍼런스](/docs/reference/config/istio.networking.v1alpha3/)에서 볼 수 있습니다.
 
-### Virtual Services
+### 가상 서비스<sub>Virtual Service</sub>
 
-A [`VirtualService`](/docs/reference/config/istio.networking.v1alpha3/#VirtualService) defines the rules that control how requests for a service are routed within an Istio service mesh.
-For example, a virtual service could route requests to different versions of a service or to a completely different service than was requested.
-Requests can be routed based on the request source and destination, HTTP paths and header fields, and weights associated with individual service versions.
+[`VirtualService`](/docs/reference/config/istio.networking.v1alpha3/#VirtualService)는 Istio 서비스 메쉬 안의 서비스에 대한 요청이 라우팅되는 규칙을 정의합니다.
+예를 들면, 가상 서비스는 요청을 요청한 서비스와 다른 버전의 서비스나 완전히 다른 서비스로 라우팅할 수 있습니다.
+요청은 출발지, 도착지, HTTP 경로와 헤더 필드, 그리고 각  서비스 버전에 따른 가중치에 기반하여 라우팅되게 됩니다.
 
-#### Rule destinations
+#### 규칙 도착지<sub>Rule destination</sub>
 
-Routing rules correspond to one or more request destination hosts that are specified in a `VirtualService` configuration.
-These hosts may or may not be the same as the actual destination workload and may not even correspond to an actual routable service in the mesh.
-For example, to define routing rules for requests to the *reviews* service using its internal mesh name `reviews` or via host `bookinfo.com`, a `VirtualService` could set the `hosts` field as:
+라우팅 규칙은 `VirtualService` 설정에서 지정된 하나 또는 그 이상의 목적지 호스트에 대응됩니다.
+이 호스트는 실제 목적지의 작업량과 같을 수도, 같지 않을 수도 있고 메쉬에 있는 실제 라우팅 가능한 서비스에 대응하지 않을 수 조차 있습니다.
+예로, *reviews* 서비스의 내부 메쉬 이름인 `reviews`나 호스트인 `bookinfo.com`을 사용하여 요청 라우팅 규칙을 정의하기 위해서 `VirtualService`는  자신의 `hosts` 필드를 아래와 같이 설정할 수 있습니다:
 
 {{< text yaml >}}
 hosts:
@@ -287,17 +285,17 @@ hosts:
   - bookinfo.com
 {{< /text >}}
 
-The `hosts` field specifies, implicitly or explicitly, one or more fully qualified domain names (FQDN).
-The short name `reviews`, above, would implicitly expand to an implementation specific FQDN.
-For example, in a Kubernetes environment the full name is derived from the cluster and namespace of the `VirtualSevice` (for example, `reviews.default.svc.cluster.local`).
+`hosts` 필드는 암시적이나 명시적으로 하나 또는 그 이상의 도메인 이름의 절대 표기(FQDN)를 지정합니다.
+짧은 이름인 `reviews`는 암시적으로 구현 특화적인 FQDN으로 확장됩니다.
+예로, Kubernetes 환경에서는 확장된 이름은 클러스터와 `VirtualService`의 네임스페이스로부터 만들어집니다(`reviews.default.svc.cluster.local`와 같이).
 
-#### Splitting traffic between versions
+#### 여러 버전에 트래픽 나누기
 
-Each route rule identifies one or more weighted backends to call when the rule is activated.
-Each backend corresponds to a specific version of the destination service, where versions can be expressed using _labels_.
-If there are multiple registered instances with the specified label(s), they will be routed to based on the load balancing policy configured for the service, or round-robin by default.
+각각의 라우팅 규칙은 규칙이 적용될 때 부를 하나 또는 그 이상의 가중치를 가진 백엔드를 지정합니다.
+각각의 백엔드는 _labels_ 로 표현할 수 있는 목적지 서비스의 한 버전에 대응합니다.
+지정된 라벨에 해당하는 인스턴스가 여러 개가 등록되어 있다면, 서비스에 설정된 로드 밸런싱 정책이나 기본 정책인 round-robin 방식으로 라우팅 될 것입니다.
 
-For example, the following rule will route 25% of traffic for the *reviews* service to instances with the "v2" label and the remaining 75% of traffic to "v1":
+예로, 아래의 규칙은 *reviews* 서비스에 대한 트래픽의 25%를 "v2" 라벨을 지닌 인스턴스에 보내고 나머지 75%의 트래픽을 "v1" 라벨을 지닌 인스턴스에 보냅니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -319,9 +317,9 @@ spec:
       weight: 25
 {{< /text >}}
 
-#### Timeouts and retries
+#### 타임아웃과 재시도
 
-By default, the timeout for HTTP requests is 15 seconds, but it can be overridden in a route rule as follows:
+기본으로, HTTP 요청의 타임아웃은 15초이지만 라우팅 규칙에서 다음과 같은 방법으로 덮어쓸 수 있다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -339,8 +337,8 @@ spec:
     timeout: 10s
 {{< /text >}}
 
-You can also specify the number of retry attempts for an HTTP request in a route rule.
-The maximum number of retry attempts, or the number of attempts possible within the default or overridden timeout period, can be set as follows:
+HTTP 요청에 대한 재시도 횟수 또한 라우팅 규칙에서 지정할 수 있다.
+재시도의 최대 시도 횟수나, 기본 혹은 덮어씌워진 타임아웃 시간 동안 시도 가능한 재시도 횟수는 아래와 같이 설정할 수 있다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -360,16 +358,16 @@ spec:
       perTryTimeout: 2s
 {{< /text >}}
 
-Note that request timeouts and retries can also be [overridden on a per-request basis](#fine-tuning).
+요청의 타임아웃과 재시도는 [요청 별로 덮어씌워질](#fine-tuning) 수 있다는 것을 기억하세요.
 
-See the [request timeouts task](/docs/tasks/traffic-management/request-timeouts) for an example of timeout control.
+타임아웃 제어의 예를 보려면 [요청 타임아웃 작업](/docs/tasks/traffic-management/request-timeouts)을 보세요.
 
-#### Injecting faults
+#### 결함 주입<sub>Injecting fault</sub>
 
-A route rule can specify one or more faults to inject while forwarding HTTP requests to the rule's corresponding request destination.
-The faults can be either delays or aborts.
+라우팅 규칙은 하나 또는 그 이상의 HTTP 요청을 규칙에 따른 목적지에 전달하는 과정에 주입할 결함을 지정할 수 있습니다.
+결함은 지연이나 중단 중에 하나가 됩니다.
 
-The following example introduces a 5 second delay in 10% of the requests to the "v1" version of the *ratings* microservice:
+아래의 예제는 *ratings* 마이크로서비스의 "v1" 버전에 대한 요청의 10%에 5초의 지연을 주입합니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -390,9 +388,9 @@ spec:
         subset: v1
 {{< /text >}}
 
-You can use the other kind of fault, an abort, to prematurely terminate a request. For example, to simulate a failure.
+다른 유형의 결함인 중단을 사용해 요청을 (예를 들면, 모의로 실패를 하기 위해) 미성숙한 상태에서 종료할 수 있습니다.
 
-The following example returns an HTTP 400 error code for 10% of the requests to the *ratings* service "v1":
+아래의 예제는 *ratings* 서비스의 "v1"에 대한 요청의 10%에 대해 HTTP 400 에러 코드를 반환합니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -413,7 +411,8 @@ spec:
         subset: v1
 {{< /text >}}
 
-Sometimes delay and abort faults are used together. For example, the following rule delays by 5 seconds all requests from the *reviews* service "v2" to the *ratings* service "v1" and then aborts 10% of them:
+종종 지연과 중단이 함께 사용될 수 있습니다.
+예로, 아래의 규칙은 the following rule delays by 5 seconds all requests from the *reviews* 서비스의 "v2"로부터 *ratings* 서비스의 "v1"으로 가는 모든 요청을 5초 만큼 지연시키고 그 중 10%의 요청을 중단합니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -440,13 +439,14 @@ spec:
         subset: v1
 {{< /text >}}
 
-To see fault injection in action, see the [fault injection task](/docs/tasks/traffic-management/fault-injection/).
+결함 주입이 동작하는 것을 보고 싶다면 [결함 주입 작업](/docs/tasks/traffic-management/fault-injection/)을 보세요.
 
-#### Conditional rules
+#### 조건부 규칙<sub>Conditional rule</sub>
 
-Rules can optionally be qualified to only apply to requests that match some specific condition such as the following:
+규칙은 다음과 같은 조건에 맞는 요청에만 적용되도록 선택적으로 적용될 수 있습니다:
 
-_1. Restrict to specific client workloads using workload labels_.  For example, a rule can indicate that it only applies to calls from workloads (pods) implementing the *reviews* service:
+_1. 작업량 라벨<sub>workload label</sub>을 사용하여 특정한 클라이언트 작업량을 제한_.
+예로, 규칙이 *reviews* 서비스를 구현하는 작업량(pod)으로부터 오는 요청에 대해 적용되는 것을 나타낼 수 있습니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -463,10 +463,10 @@ spec:
     ...
 {{< /text >}}
 
-The value of `sourceLabels` depends on the implementation of the service.
-In Kubernetes, for example, it would probably be the same labels that are used in the pod selector of the corresponding Kubernetes service.
+`sourceLabels`의 값은 서비스의 구현에 따라 달라집니다.
+예를 들어 Kubernetes에서는, `sourceLabels`는 일반적으로 해당 Kuberneted 서비스의 pod selector에 사용된 라벨과 같을 것 입니다.
 
-The above example can also be further refined to only apply to calls from version "v2" of the *reviews* service:
+위의 예제는 또한 *reviews* 서비스의 "v2" 버전에만 적용되도록 수정할 수 있습니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -484,7 +484,8 @@ spec:
     ...
 {{< /text >}}
 
-_2. Select rule based on HTTP headers_. For example, the following rule only applies to an incoming request if it includes a custom "end-user" header that contains the string "jason":
+_2. HTTP 헤더에 기반하여 규칙 선택_.
+예로, 다음 규칙은 들어오는 요청 중 사용자 지정 "end-user" 헤더의 값이 문자열 "jason"일 때에만 적용됩니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -502,9 +503,10 @@ spec:
     ...
 {{< /text >}}
 
-If more than one header is specified in the rule, then all of the corresponding headers must match for the rule to apply.
+만약 규칙에 한 개 이상의 헤더가 지정되어 있다면 모든 헤더가 조건을 만족해야 규칙이 적용됩니다.
 
-_3. Select rule based on request URI_. For example, the following rule only applies to a request if the URI path starts with `/api/v1`:
+_3. 요청 URI에 기반하여 규칙 선택_.
+예로, 다음 규칙은 `/api/v1`으로 시작하는 URI 경로를 가진 요청에 대해서만 적용됩니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -521,13 +523,13 @@ spec:
     ...
 {{< /text >}}
 
-#### Multiple match conditions
+#### 다중 매치 조건
 
-Multiple match conditions can be set simultaneously.
-In such a case, AND or OR semantics apply, depending on the nesting.
+여러 매치 조건은 동시에 설정될 수 있습니다.
+그런 경우에, 중첩 단계에 따라 AND나 OR이 적용됩니다.
 
-If multiple conditions are nested in a single match clause, then the conditions are ANDed.
-For example, the following rule only applies if the client workload is "reviews:v2" AND the custom "end-user" header containing "jason" is present in the request:
+만약 여러 조건이 한 개의 매치 절에 중첩되어 있다면 그 조건들은 AND가 적용됩니다.
+예를 들어, 다음 규칙은 클라이언트 작업량이 "reviews:v2"이고 요청의 사용자 정의 헤더 "end-user" 헤더의 값이 "jason"일 때에만 적용됩니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -548,7 +550,7 @@ spec:
     ...
 {{< /text >}}
 
-If instead, the condition appear in separate match clauses, then only one of the conditions applies (OR semantics):
+만약 조건들이 별개의 매치 절에 나타난다면, 하나의 조건만 만족하면 됩니다(OR):
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -569,21 +571,21 @@ spec:
     ...
 {{< /text >}}
 
-This rule applies if either the client workload is "reviews:v2" OR the custom "end-user" header containing "jason" is present in the request.
+이 규칙은 클라이언트 작업량이 "reviews:v2"이거나 요청의 사용자 정의 헤더 "end-user" 헤더의 값이 "jason"일 경우에 적용됩니다.
 
-#### Precedence
+#### 우선순위
 
-When there are multiple rules for a given destination, they are evaluated in the order they appear in the `VirtualService`, meaning the first rule in the list has the highest priority.
+주어진 목적지에 대해 여러 규칙이 있다면, `VirtualService`에 나타나는 순서대로 처리되어 가장 처음 나타나는 규칙이 가장 높은 우선 순위를 가집니다.
 
-**Why is priority important?** Whenever the routing story for a particular service is purely weight based, it can be specified in a single rule.
-On the other hand, when other conditions (such as requests from a specific user) are being used to route traffic, more than one rule will be needed to specify the routing.
-This is where the rule priority must be carefully considered to make sure that the rules are evaluated in the right order.
+**우선순위가 왜 중요한가요?**
+특정 서비스의 라우팅 시나리오가 순수하게 가중치에만 기반한다면 하나의 규칙으로 설정할 수 있습니다.
+하지만 다른 조건(특정 유저로부터 오는 요청과 같은)이 트래픽을 라우팅 하는데 쓰여진다면, 그 라우팅을 표현하기 위해 한 개 이상의 규칙이 필요하게 됩니다.
+이 때, 규칙들이 올바른 순서로 처리될 수 있도록 규칙의 우선순위를 세심하게 고려하여야 합니다.
 
-A common pattern for generalized route specification is to provide one or more higher priority rules that match various conditions,
-and then provide a single weight-based rule with no match condition last to provide the weighted distribution of traffic for all other cases.
+일반화된 라우트 정의에 사용되는 패턴은 하나 또는 그 이상의 높은 우선순위를 가진 여러 조건을 포함하는 규칙을 제공하고, 마지막으로 매치 조건이 없는 한 개의 가중치 기반의 규칙을 추가하여 다른 모든 경우에 대해 처리하는 것입니다.
 
-For example, the following `VirtualService` contains two rules that, together, specify that all requests for the *reviews* service that includes a header named "Foo" with the value "bar" will be sent to the "v2" instances.
-All remaining requests will be sent to "v1":
+예로, 다음의 `VirtualService`는 종합하여 *reviews* 서비스에 대한 요청의 "Foo"라는 헤더의 값이 "bar"인 모든 요청을 "v2" 인스턴스로 보내도록 하는 규칙 2개를 지정하고 있습니다.
+다른 모든 요청은 "v1"으로 보내어집니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -608,20 +610,21 @@ spec:
         subset: v1
 {{< /text >}}
 
-Notice that the header-based rule has the higher priority.
-If it was lower, these rules wouldn't work as expected because the weight-based rule, with no specific match condition, would be evaluated first to route all traffic to "v1", even requests that include the matching "Foo" header.
-Once a rule is found that applies to the incoming request, it is executed and the rule-evaluation process terminates.
-That's why it's very important to carefully consider the priorities of each rule when there is more than one.
+헤더 기반의 규칙이 더 높은 우선순위를 가지고 있는 것에 주목하세요.
+헤더 기반 규칙의 우선순위가 가중치 기반의 규칙의 우선순위 보다 더 낮다면, 이 규칙은 위에서 설명한 대로 동작하지 않을 것입니다.
+"Foo" 헤더의 값이 알맞은 요청이 들어와도 가중치 기반의 규칙이 먼저 처리되어 모든 트래픽을 "v1"으로 보내버릴 것이기 때문입니다.
+들어오는 요청에 대해 적용되는 규칙이 발견되면, 즉시 규칙이 적용되고 규칙 평가 과정은 종료됩니다.
+그렇기 때문에 규칙이 한 개 이상일 때 우선순위를 잘 정하는 것이 아주 중요합니다.
 
-### Destination rules
+### 목적지 규칙<sub>Destination rule</sub>
 
-A [`DestinationRule`](/docs/reference/config/istio.networking.v1alpha3/#DestinationRule) configures the set of policies to be applied to a request after `VirtualService` routing has occurred.
-They are intended to be authored by service owners, describing the circuit breakers, load balancer settings, TLS settings, and other settings.
+[`DestinationRule`](/docs/reference/config/istio.networking.v1alpha3/#DestinationRule)은 `VirtualService`의 라우팅이 이루어진 뒤에 적용될 정책을 설정합니다.
+이 규칙은 서비스의 소유자가 관리하여 회로 차단기를 정의하고, 로드 밸런서 설정을 정의하고, TLS 설정을 하고 다른 설정 또한 할 수 있게 의도되어 있습니다.
 
-A `DestinationRule` also defines addressable `subsets`, meaning named versions, of the corresponding destination host.
-These subsets are used in `VirtualService` route specifications when sending traffic to specific versions of the service.
+`DestinationRule`은 또한 목적지 호스트의 주소 지정이 가능한 `subset`(이름 있는 버전<sub>named version</sub>)을 정의합니다.
+이 서브셋은 특정 버전의 서비스에 트래픽을 보낼 때 `VirtualService`의 라우트 정의에서 사용됩니다.
 
-The following `DestinationRule` configures policies and subsets for the reviews service:
+다음의 `DestinationRule`은 reviews 서비스에 대한 정책과 서브셋을 설정합니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -648,45 +651,13 @@ spec:
       version: v3
 {{< /text >}}
 
-Notice that multiple policies, default and v2-specific in this example, can be specified in a single `DestinationRule` configuration.
+하나의 `DestinationRule` 설정에 여러 개의 정책을 (이 예제에서는 기본 정책과 v2 특화 정책) 지정할 수 있는 것을 알아두세요.
 
-#### Circuit breakers
+#### 회로 차단기
 
-A simple circuit breaker can be set based on a number of conditions such as connection and request limits.
+연결 제한과 요청 제한과 같은 조건에 기반한 간단한 회로 차단기도 설정할 수 있습니다.
 
-For example, the following `DestinationRule` sets a limit of 100 connections to *reviews* service version "v1" backends:
-
-{{< text yaml >}}
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  name: reviews
-spec:
-  host: reviews
-  subsets:
-  - name: v1
-    labels:
-      version: v1
-    trafficPolicy:
-      connectionPool:
-        tcp:
-          maxConnections: 100
-{{< /text >}}
-
-See the [circuit-breaking task](/docs/tasks/traffic-management/circuit-breaking/) for a demonstration of circuit breaker control.
-
-#### Rule evaluation
-
-Similar to route rules, policies defined in a `DestinationRule` are associated with a particular *host*.
-However if they are subset specific, activation depends on route rule evaluation results.
-
-The first step in the rule evaluation process evaluates the route rules in the `VirtualService` corresponding to the requested *host*, if there are any, to determine the subset (meaning specific version) of the destination service that the current request will be routed
-to.
-Next, the set of policies corresponding to the selected subset, if any, are evaluated to determine if they apply.
-
-**NOTE:** One subtlety of the algorithm to keep in mind is that policies that are defined for specific subsets will only be applied if
-the corresponding subset is explicitly routed to.
-For example, consider the following configuration as the one and only rule defined for the *reviews* service, meaning there are no route rules in the corresponding `VirtualService` definition:
+예로, 다음의 `DestinationRule`은 *reviews* 서비스의 "v1" 버전 백엔드에 100개의 연결 제한을 설정합니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -705,13 +676,43 @@ spec:
           maxConnections: 100
 {{< /text >}}
 
-Since there is no specific route rule defined for the *reviews* service, default round-robin routing behavior will apply, which will
-presumably call "v1" instances on occasion, maybe even always if "v1" is the only running version.
-Nevertheless, the above policy will never be invoked since the default routing is done at a lower level.
-The rule evaluation engine will be unaware of the final destination and therefore unable to match the subset policy to the request.
+회로 차단기의 제어를 살펴보기 위해서는 [회로 차단 작업](/docs/tasks/traffic-management/circuit-breaking/)을 보세요.
 
-You can fix the above example in one of two ways.
-You can either move the traffic policy up a level in the `DestinationRule` to make it apply to any version:
+#### 규칙 처리
+
+라우트 규칙과 유사하게 `DestinationRule`에 정의된 정책도 특정한 *호스트*와 연관되어 있습니다.
+하지만 subset 특화된 규칙이라면, 그 규칙의 활성화는 라우트 규칙의 처리 결과에 따라 달라집니다.
+
+규칙 처리 과정의 첫 단계는 요청하는 *호스트*에 대응되는 `VirtualService`의 라우트 규칙을 평가하고, 목적지 서비스의 요청이 전달될 subset(특정된 버전을 의미함)을 결정하는 것입니다.
+그 다음으로는, 선택된 subset에 적용되는 정책이 있다면, 요청에 그 정책이 적용되어야 하는 지 평가됩니다.
+
+**참고:** 명심해야할 알고리즘의 미묘한 점은 특정한 subset에 대해 정의된 정책은 해당 subset으로 명시적으로 라우팅 되었을 때에만 적용된다는 것입니다.
+예로, 다음과 같은 설정이 *reviews* 서비스에 대해 정의된 유일한 규칙이라 생각해봅시다.
+이 말인 즉슨 *reviews* `VirtualService`의 정의에는 다른 라우트 규칙이 없다는 것입니다:
+
+{{< text yaml >}}
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: reviews
+spec:
+  host: reviews
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 100
+{{< /text >}}
+
+*reviews* 서비스에 대해 다른 라우트 규칙이 정의된 것이 없기 때문에, 기본 규칙인 round-robin 라우팅 동작이 적용되어 때떄로 "v1" 인스턴스를 부르거나 "v1"이 실행 중인 유일한 버전이라면 항상 "v1"을 부를 것입니다.
+그렇지만 위에 정의된 연결 제한 정책은 기본 라우팅 동작이 더 낮은 수준에서 동작하고 있기 때문에 "v1" 버전에도 적용되지 않을 것입니다.
+규칙 처리 엔진이 최종 목적지를 알 수 없어 요청을 subset 정책에 짝 짓지 못합니다.
+
+위 예제는 두 가지 방법으로 고칠 수 있습니다.
+트래픽 정책을 `DestinationRule`의 정의에서 한 수준 위로 올려 모든 버전에 적용되도록 할 수 있습니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -730,8 +731,8 @@ spec:
       version: v1
 {{< /text >}}
 
-Or, better yet, define proper route rules for the service in the `VirtualService` definition.
-For example, add a simple route rule for "reviews:v1":
+또는, 더 나은 방법으로는 `VirtualService`의 정의에서 서비스에 알맞은 라우트 규칙을 정의하는 것이 있습니다.
+예를 들면, "reviews:v1"에 대한 라우트 규칙을 추가하세요:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -748,14 +749,14 @@ spec:
         subset: v1
 {{< /text >}}
 
-Although the default Istio behavior conveniently sends traffic from any source to all versions of a destination service without any rules being set, as soon as version discrimination is desired rules are going to be needed.
-Therefore, setting a default rule for every service, right from the start, is generally considered a best practice in Istio.
+Istio의 기본 동작이 아무런 규칙 설정 없이 편리하게 어떤 곳에서던 오는 트래픽을 모든 버전의 목적지 서비스로 보내주지만, 버전에 대한 다른 정책이 필요해지는 순간 규칙이 필요해집니다.
+그러므로, 시작부터 모든 서비스에 대해 기본 규칙을 설정하는 것이 Istio에서 모범 사례입니다.
 
-### Service entries
+### 서비스 항목<sub>Service entry</sub>
 
-A [`ServiceEntry`](/docs/reference/config/istio.networking.v1alpha3/#ServiceEntry) is used to add additional entries into the service registry that Istio maintains internally.
-It is most commonly used to enable requests to services outside of an Istio service mesh.
-For example, the following `ServiceEntry` can be used to allow external calls to services hosted under the `*.foo.com` domain:
+[`ServiceEntry`](/docs/reference/config/istio.networking.v1alpha3/#ServiceEntry)는 추가적인 항목을 Istio가 내부적으로 관리하는 서비스 레지스트리에 등록하기 위해 사용됩니다.
+`ServiceEntry`는 서비스 외부에 있는 서비스에 요청을 보낼 수 있게 하기 위해서 가장 많이 사용됩니다.
+예로, 다음의 `ServiceEntry`는 `*.foo.com` 도메인에서 관리되는 서비스에 대한 외부 요청을 허용하는데 사용됩니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -774,18 +775,19 @@ spec:
     protocol: HTTPS
 {{< /text >}}
 
-The destination of a `ServiceEntry` is specified using the `hosts` field, which can be either a fully qualified or wildcard domain name.
-It represents a white listed set of one or more services that services in the mesh are allowed to access.
+`ServiceEntry`의 목적지는 `hosts` 필드를 통해 지정됩니다.
+`hosts` 필드의 값은 절대 표기된 이름이거나 와일드카드가 포함된 이름입니다.
+`hosts` 필드의 값은 하나 또는 그 이상의, 메쉬 안의 서비스가 요청을 보낼 수 있는 서비스를 나타냅니다.
 
-A `ServiceEntry` is not limited to external service configuration.
-It can be of two types: mesh-internal or mesh-external.
-Mesh-internal entries are like all other internal services but are used to explicitly add services to the mesh.
-They can be used to add services as part of expanding the service mesh to include unmanaged infrastructure (for example, VMs added to a Kubernetes-based service mesh).
-Mesh-external entries represent services external to the mesh.
-For them, mutual TLS authentication is disabled and policy enforcement is performed on the client-side, instead of on the server-side as it is for internal service requests.
+`ServiceEntry`는 외부 서비스 설정에만 국한되지 않습니다.
+`ServiceEntry`는 두 종류 중 하나가 될 수 있습니다: 메쉬 내부적<sub>mesh-internal</sub>, 메쉬 외부적<sub>mesh-external</sub>.
+메쉬 내부적인 항목은 내부 서비스와 비슷하지며 메쉬에 서비스를 명시적으로 추가하기 위해 사용됩니다.
+메쉬 내부적인 항목은 관리되지 않은 인프라스트럭쳐를 포함하여 서비스 메쉬를 확장하기 위해 서비스를 추가하는 데 사용됩니다(예로, Kubernetes 기반의 서비스 메쉬에 추가된 VM).
+메쉬 외부적인 항목은 메쉬의 외부에 존재하는 서비스를 나타냅니다.
+메쉬 외부적인 항목에게는 상호 TLS 인증<sub>mutual TLS authentication</sub>은 비활성화 되어 있으며 내부 서비스 요청과 다르게 정책 적용을 서버 단이 아닌 클라이언트 단에서 수행하게 됩니다.
 
-Service entries work well in conjunction with virtual services and destination rules as long as they refer to the services using matching `hosts`.
-For example, the following rule can be used in conjunction with the above `ServiceEntry` rule to set a 10s timeout for calls to the external service at `bar.foo.com`:
+서비스 항목은 제대로 짝지어진 `hosts`를 사용하는 서비스를 가르킨다면 virtual service와 destination rule과 함께 잘 동작합니다.
+예로, 다음의 규칙은 위의 `ServiceEntry` 규칙과 함께 사용되어 `bar.foo.com`에 있는 외부 서비스에 대한 요청의 타임아웃을 10s로 설정할 수 있습니다.:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -802,19 +804,19 @@ spec:
     timeout: 10s
 {{< /text >}}
 
-Rules to redirect and forward traffic, to define retry, timeout, and fault injection policies are all supported for external destinations.
-Weighted (version-based) routing is not possible, however, since there is no notion of multiple versions of an external service.
+트래픽을 리다이렉트하고 전달하거나 재시도, 타임아웃, 결함 주입을 하는 정책과 규칙은 모두 외부 목적지에 대해서도 동작합니다.
+하지만 가중치(버전 기반) 기반 라우팅은 외부 서비스에는 다중 버전이라는 개념이 없기 때문에 불가능합니다.
 
-See the [egress task](/docs/tasks/traffic-management/egress/) for a more about accessing external services.
+외부 서비스에 접근하는 것에 대해 더 알고 싶다면 [egress 작업](/docs/tasks/traffic-management/egress/)을 보세요.
 
-### Gateways
+### 게이트웨이<sub>Gateway</sub>
 
-A [Gateway](/docs/reference/config/istio.networking.v1alpha3/#Gateway) configures a load balancer for HTTP/TCP traffic, most commonly operating at the edge of the mesh to enable ingress traffic for an application.
+[Gateway](/docs/reference/config/istio.networking.v1alpha3/#Gateway)는 일반적으로 메쉬의 가장자리에서 동작하여 어플리케이션에 유입되는 HTTP/TCP 트래픽에 대한 로드 밸런서를 설정합니다.
 
-Unlike Kubernetes Ingress, Istio `Gateway` only configures the L4-L6 functions (for example, ports to  expose, TLS configuration).
-Users can then use standard Istio rules to control HTTP requests as well as TCP traffic entering a `Gateway` by binding a `VirtualService` to it.
+Kubernetes의 Ingress와는 다르게 Istio의 `Gateway`는 L4-L6 기능만을 설정합니다(예로, 노출할 포트, TLS 설정).
+사용자는 `VirtualService`을 `Gateway`에 묶음으로서 표준 Istio 규칙을 사용하여 `Gateway`에 유입되는 HTTP 요청과 TCP 트래픽을 제어할 수 있습니다.
 
-For example, the following simple `Gateway` configures a load balancer to allow external HTTPS traffic for host `bookinfo.com` into the mesh:
+예로, 다음의 간단한 `Gateway`는 `bookinfo.com` 호스트에 대한 외부로부터의 HTTPS 요청을 메쉬로 들여보내는 설정을 합니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -835,7 +837,7 @@ spec:
       privateKey: /tmp/tls.key
 {{< /text >}}
 
-To configure the corresponding routes, you must define a `VirtualService` for the same host and bound to the `Gateway` using the `gateways` field in the configuration:
+대응되는 경로를 설정하기 위해서 반드시 `Gateway`에서 사용한 것과 같은 호스트로 `VirtualService`의 `gateways` 필드를 지정하여 묶어 설정해 주어야 합니다:
 
 {{< text yaml >}}
 apiVersion: networking.istio.io/v1alpha3
@@ -855,8 +857,8 @@ spec:
     ...
 {{< /text >}}
 
-See the [ingress task](/docs/tasks/traffic-management/ingress/) for a complete ingress gateway example.
+완전한 ingress gateway 예제를 보려면 [ingress 작업](/docs/tasks/traffic-management/ingress/)을 보세요.
 
-Although primarily used to manage ingress traffic, a `Gateway` can also be used to model a purely internal or egress proxy.
-Irrespective of the location, all gateways can be configured and controlled in the same way.
-See [gateway reference](/docs/reference/config/istio.networking.v1alpha3/#Gateway) for details.
+기본적으로 ingress 트래픽을 관리하기 위해 사용되지만 `Gateway`는 완전히 내부용이나 egress proxy를 만들기 위해 사용할 수 있습니다.
+장소에 관계없이 모든 게이트웨이는 같은 방법으로 설정되고 제어됩니다.
+더 자세한 내용은 [게이트웨이](/docs/reference/config/istio.networking.v1alpha3/#Gateway)를 보세요.
