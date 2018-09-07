@@ -1,6 +1,6 @@
 ---
 title: Istio가 뭔가요?
-description: Introduces Istio, the problems it solves, its high-level architecture and design goals.
+description: Istio와 Istio가 풀고자 하는 문제, 그리고 Istio의 고수준 구조와 디자인 목표를 소개합니다.
 weight: 15
 aliases:
     - /docs/concepts/what-is-istio/overview
@@ -8,114 +8,103 @@ aliases:
     - /about/intro
 ---
 
-Cloud platforms provide a wealth of benefits for the organizations that use them. There’s no denying, however, that adopting the cloud can put strains on DevOps
-teams. Developers must use microservices to architect for portability, meanwhile operators are managing extremely large hybrid and multi-cloud deployments.
-Istio lets you connect, secure, control, and observe services.
+클라우드 플랫폼은 사용하는 단체에 다양한 이득을 제공합니다.
+그것을 부정하지는 않습니다만, 클라우드를 적용하는 것은 DevOps 팀에 큰 부담을 줍니다.
+운영자는 엄청나게 거대한 하이브리드 다중 클라우드 배포를 관리해야 하는 동시에 개발자는 마이크로서비스를 사용해서 이식성을 염두에 두고 구조화 해야만 합니다.
+Istio는 당신이 서비스를 연결하고, 보호하고, 제어하고, 관찰할 수 있게 해줍니다.
 
-At a high level, Istio helps reduce the complexity of these deployments, and eases the strain on your development teams. It is a completely open source service
-mesh that layers transparently onto existing distributed applications. It is also a platform, including APIs that let it integrate into any logging platform, or
-telemetry or policy system. Istio’s diverse feature set lets you successfully, and efficiently, run a distributed microservice architecture, and provides a
-uniform way to secure, connect, and monitor microservices.
+고수준 관점에서 Istio는 이러한 배포의 복잡도를 줄여주고 개발팀의 부담을 줄여줍니다.
+Istio는 완전히 오픈 소스이며 존재하는 분산 어플리케이션에 쉽게 적용될 수 있는 서비스 메쉬입니다.
+Istio는 또한 어떠한 로깅 플랫폼이나 원격 측정 또는 정책 시스템에도 적용할 수 있는 API를 포함한 플랫폼입니다.
+Istio의 다양한 기능 셋은 성공적이고 효율적으로 분산된 마이크로서비스 구조를 실행할 수 있게 하고, 마이크로서비스를 보호하고 연결하고 감시하는 하나의 균일한 방법을 제공합니다.
 
-## What is a service mesh?
+## 서비스 메쉬<sub>service mesh</sub>가 무엇인가요?
 
-Istio addresses the challenges developers and operators face as monolithic applications transition towards a distributed microservice architecture. To see how,
-it helps to take a more detailed look at Istio’s service mesh.
+Istio는 모노리식 어플리케이션이 분산 마이크로서비스 구조로 변하는 과정에서 개발자와 운영자가 겪는 여러 어려운 문제를 해결하고자 합니다.
+어떻게 하는지 알고 싶다면, Istio의 서비스 메쉬를 더 자세히 살펴보는 것이 도움이 됩니다.
 
-The term service mesh is used to describe the network of microservices that make up such applications and the interactions between them. As a service mesh grows
- in size and complexity, it can become harder to understand and manage. Its requirements can include discovery, load balancing, failure recovery, metrics, and
- monitoring. A service mesh also often has more complex operational requirements, like A/B testing, canary releases, rate limiting, access control, and
- end-to-end authentication.
+서비스 메쉬는 어플리케이션을 구성하는 마이크로서비스의 네트워크와 그 서비스 사이의 상호 작용을 표현하는 데 사용합니다.
+서비스 메쉬가 커지고 복잡해짐에 따라, 이해하고 관리하기가 힘들어질 수 있습니다.
+서비스 메쉬의 요구 사항은 디스커버리, 로드 밸런싱, 실패 복구, 메트릭, 모니터링 등을 포함합니다.
+서비스 메쉬는 A/B 테스팅, canary 배포, 비율 제한<sub>rate limiting</sub>, 접근 제어<sub>access control</sub>, 말단간 인증<sub>end-to-end authentication</sub>과 같은 비교적 복잡한 운영적인 요구사항도 종종 포함합니다.
 
-Istio provides behavioral insights and operational control over the service mesh as a whole, offering a complete solution to satisfy the diverse requirements of
- microservice applications.
+Istio는 서비스 메쉬에 대한 동작적인 이해와 운영적인 제어를 제공하여 마이크로서비스 어플리케이션의 다양한 요구사항을 충족시킬 수 있는 완전한 해결책을 제공합니다.
 
-## Why use Istio?
+## 왜 Istio를 써야 하나요?
 
-Istio makes it easy to create a network of deployed services with load balancing, service-to-service authentication, monitoring, and more, without any changes
-in service code. You add Istio support to services by deploying a special sidecar proxy throughout your environment that intercepts all network communication
-between microservices, then configure and manage Istio using its control plane functionality, which includes:
+Istio는 서비스 코드의 수정없이 로드 밸런싱과 서비스 간 인증, 모니터링 등의 기능을 가진 배포된 서비스 네트워크를 만들기 쉽게 해줍니다.
+마이크로서비스 사이의 모든 네트워크 연결을 가로채는 특별한 sidecar proxy를 당신의 환경에 배포함으로서 Istio의 제어 평면<sub>control plane</sub> 기능을 사용하여 당신의 서비스에 다음과 같은 기능을 설정하고 관리할 수 있게 합니다:
 
-* Automatic load balancing for HTTP, gRPC, WebSocket, and TCP traffic.
+* HTTP, gRPC, WebSocket, TCP 트래픽에 대한 자동 로드 밸런싱.
 
-* Fine-grained control of traffic behavior with rich routing rules, retries, failovers, and fault injection.
+* 풍부한 라우팅 규칙과 재시도, 실패 복구, 결함 주입 등을 활용한 트래픽 행동에 대한 세세한 제어.
 
-* A pluggable policy layer and configuration API supporting access controls, rate limits and quotas.
+* 장착 가능한 정책 계층과 접근 제어와 속도 제한과 한도 할당을 지원하는 설정 API.
 
-* Automatic metrics, logs, and traces for all traffic within a cluster, including cluster ingress and egress.
+* 클러스터 ingress와 egress를 포함하는 클러스터 안의 트래픽 흔적과 로그, 자동 메트릭.
 
-* Secure service-to-service communication in a cluster with strong identity-based authentication and authorization.
+* 클러스터 안의 강력한 신원 기반의 인증과 인가를 사용한 안전한 서비스 간 커뮤니케이션.
 
-Istio is designed for extensibility and meets diverse deployment needs.
+Istio는 확장을 위해 설계되었으며 다양한 배포 시의 요구사항을 지원합니다.
 
-## Core features
+## 핵심 기능
 
-Istio provides a number of key capabilities uniformly across a network of
-services:
+Istio는 다양한 주요 기능을 서비스 네트워크에 균등하게 제공합니다:
 
-### Traffic management
+### 트래픽 관리<sub>Traffic management</sub>
 
-Istio’s easy rules configuration and traffic routing lets you control the flow of traffic and API calls between services. Istio simplifies configuration of
-service-level properties like circuit breakers, timeouts, and retries, and makes it a breeze to set up important tasks like A/B testing, canary rollouts, and
-staged rollouts with percentage-based traffic splits.
+Istio의 쉬운 규칙 설정과 트래픽 라우팅은 서비스 간의 API 요청과 트래픽의 흐름을 설정할 수 있게 해 줍니다.
+Istio는 회로 차단기, 타임아웃, 재시도와 같은 서비스 수준의 속성 설정을 단순하게 하고 A/B 테스팅, canary rollout, 퍼센트 기반 트래픽 분리된 staged rollout과 같은 중요한 작업을 쉽게 만들어 줍니다.
 
-With better visibility into your traffic, and out-of-box failure recovery features, you can catch issues before they cause problems, making calls more reliable,
-and your network more robust -- no matter what conditions you face.
+어떤 상황에 처해 있더라도 트래픽에 대한 더 높은 가시성과 좋은 실패 복구 기능과 함께라면, 이슈가 문제를 일으키기 전에 발견할 수 있고, 요청과 네트워크를 보다 더 신뢰할 수 있게 합니다.
 
-### Security
+### 보안<sub>Security</sub>
 
-Istio’s security capabilities free developers to focus on security at the application level. Istio provides the underlying secure communication channel, and
-manages authentication, authorization, and encryption of service communication at scale. With Istio, service communications are secured by default,
-letting you enforce policies consistently across diverse protocols and runtimes -- all with little or no application changes.
+Istio의 보안 능력은 개발자가 어플리케이션 수준의 보안에 더 집중할 수 있게 해 줍니다.
+Istio는 안전한 커뮤니케이션 채널과 관리된 인증과 인가, 서비스의 커뮤니케이션에 대한 암호화를 제공합니다.
+Istio를 사용하면 어플리케이션에 수정 없이나 적은 수정 만으로도, 서비스 커뮤니케이션은 기본적으로 보호되며 여러 런타임과 다양한 프로토콜에 걸쳐  정책을 지속적으로 적용할 수 있습니다.
 
-While Istio is platform independent, using it with Kubernetes (or infrastructure) network policies, the benefits are even greater, including the ability to
-secure pod-to-pod or service-to-service communication at the network and application layers.
+Istio는 플랫폼으로부터 독립적이지만, Kubernetes(또는 인프라스트럭처)의 네트워크 정책과 함께 사용하면 pod 간 커뮤니케이션이나 서비스 간 커뮤니케이션을 네트워크 단과 어플레케이션 단에서 보호하는 등의 더 큰 이익을 얻을 수 있습니다.
 
-### Observability
+### 관측성<sub>Observability</sub>
 
-Istio’s robust tracing, monitoring, and logging give you deep insights into your service mesh deployment. Gain a real understanding of how service performance
-impacts things upstream and downstream with Istio’s monitoring features, while its custom dashboards provide visibility into the performance of all your
-services and let you see how that performance is affecting your other processes.
+Istio의 강건한 추적, 모니터링과 로깅은 서비스 메쉬 배포에 대해 깊은 이해를 할 수 있게 해줍니다
+서비스의 성능이 상류와 하류 서비스에 어떤 영향을 미치는지에 대해 Istio의 모니터링 기능을 사용해 진정한 이해를 얻으세요.
+Istio의 사용자 지정 대쉬보드는 모든 서비스의 성능에 대한 가시성을 제공하며 서비스의 성능이 다른 프로세스에 어떤 영향을 미치는지 볼 수 있게 해 줍니다.
 
-Istio’s Mixer component is responsible for policy controls and telemetry collection. It provides backend abstraction and intermediation, insulating the rest of
-Istio from the implementation details of individual infrastructure backends, and giving operators fine-grained control over all interactions between the mesh
-and infrastructure backends.
+Istio의 Mixer 컴포넌트는 원격 측정과 정책 제어를 담당합니다.
+Mixer는 Istio의 나머지 부분을 각 인프라스트럭처 백엔드의 구현 상세 사항으로부터 격리시키고 운영자가 메쉬와 인프라스트럭처 백엔드 사이의 상호 작용에 대한 세세한 제어를 할 수 있게 해 주는 백엔드 추상화와 중재를 제공합니다.
 
-All these features let you more effectively set, monitor, and enforce SLOs on services. Of course, the bottom line is that you can detect and fix issues quickly
-and efficiently.
+이러한 모든 기능은 더욱 효과적으로 서비스에 SLO를 설정하고, 관찰하고, 적용할 수 있게 해 줍니다.
+물론, 핵심은 당신이 문제를 빠르고 효율적으로 찾아 고칠 수 있다는 점입니다.
 
-### Platform support
+### 플랫폼 지원
 
-Istio is platform-independent and designed to run in a variety of environments, including those spanning Cloud, on-premise, Kubernetes, Mesos, and more. You can
- deploy Istio on Kubernetes, or on Nomad with Consul. Istio currently supports:
+Istio는 플랫폼 독립적이며 Cloud, on-premise, Kubernetes, Mesos 등의 여러 환경에서 구동될 수 있도록 설계되었습니다.
+Istio를 Kubernetes에 배포하거나 Consul을 사용하는 Nomad에 배포할 수도 있습니다.
+Istio는 현재 아래의 환경을 지원합니다:
 
-* Service deployment on Kubernetes
+* Kubernetes에 배포된 서비스
 
-* Services registered with Consul
+* Consul에 등록된 서비스
 
-* Services running on individual virtual machines
+* 가상 기기에서 실행되는 서비스
 
-### Integration and customization
+### 통합과 커스터마이징
 
-The policy enforcement component of Istio can be extended and customized to integrate with existing solutions for ACLs, logging, monitoring, quotas, auditing,
-and more.
+Istio의 정책 적용을 위한 컴포넌트는 사용 중인 ACL, 로깅, 모니터링, 자원 할당, 감사 솔루션과 함께 동작하도록 확장되고 설정될 수 있습니다.
 
-## Architecture
+## 구조
 
-An Istio service mesh is logically split into a **data plane** and a **control
-plane**.
+Istio의 서비스 메쉬는 논리적으로 **데이터 평면<sub>data plane</sub>**과 **제어 평면<sub>control plane</sub>**으로 나뉘어져 있습니다.
 
-* The **data plane** is composed of a set of intelligent proxies
-  ([Envoy](https://www.envoyproxy.io/)) deployed as sidecars. These proxies
-  mediate and control all network communication between microservices along
-  with [Mixer](/docs/concepts/policies-and-telemetry/), a general-purpose
-  policy and telemetry hub.
+* **데이터 평면**은 sidecars로 배포된 지능적인 proxy인 ([Envoy](https://www.envoyproxy.io/))들로 이루어져 있습니다.
+  이 proxy는 [Mixer](/docs/concepts/policies-and-telemetry/)라는 다용도 정책, 원격 측정 허브를 포함한 마이크로서비스 사이의 모든 네트워크 커뮤니케이션을 제어하고 중재합니다.
 
-* The **control plane** manages and configures the proxies to route traffic.
-  Additionally, the control plane configures Mixers to enforce policies and
-  collect telemetry.
+* **제어 평면**은 트래픽을 라우팅하기 위해 proxy를 설정하고 관리합니다.
+  추가적으로, 제어 평면은 Mixer를 설정하여 정책을 적용하고 원격 측정 값을 수집합니다.
 
-The following diagram shows the different components that make up each plane:
+아래의 그림이 각 평면을 구성하는 컴포넌트를 보여줍니다:
 
 {{< image width="80%" ratio="80%"
     link="./arch.svg"
@@ -125,128 +114,85 @@ The following diagram shows the different components that make up each plane:
 
 ### Envoy
 
-Istio uses an extended version of the
-[Envoy](https://envoyproxy.github.io/envoy/) proxy. Envoy is a high-performance
-proxy developed in C++ to mediate all inbound and outbound traffic for all
-services in the service mesh. Istio leverages Envoy’s many built-in features,
-for example:
+Istio는 [Envoy](https://envoyproxy.github.io/envoy/) proxy의 확장된 버전을 사용합니다.
+Envoy는 C++로 개발된 서비스 메쉬에 들어오고 나가는 트래픽을 중재하기 위해 사용되는 고성능 proxy입니다.
+Istio는 다음과 같은 Envoy의 다양한 내장 기능을 사용합니다:
 
-* Dynamic service discovery
-* Load balancing
-* TLS termination
-* HTTP/2 and gRPC proxies
-* Circuit breakers
-* Health checks
-* Staged rollouts with %-based traffic split
-* Fault injection
-* Rich metrics
+* 동적 서비스 디스커버리
+* 로드 밸런싱
+* TLS 종료
+* HTTP/2와 gRPC proxy
+* 회로 차단기
+* 상태 검사
+* %기반으로 트래픽이 분리된 Staged rollout
+* 결함 주입
+* 풍부한 메트릭
 
-Envoy is deployed as a **sidecar** to the relevant service in the same
-Kubernetes pod. This deployment allows Istio to extract a wealth of signals
-about traffic behavior as
-[attributes](/docs/concepts/policies-and-telemetry/#attributes). Istio can, in
-turn, use these attributes in [Mixer](/docs/concepts/policies-and-telemetry/)
-to enforce policy decisions, and send them to monitoring systems to provide
-information about the behavior of the entire mesh.
+Envoy는 연결되는 서비스와 같은 Kubernetes pod에 **sidecar**로 배포됩니다.
+이러한 배포는 Istio가 다양한 트래픽 동향에 대한 신호를 [속성<sub>attribute</sub>](/docs/concepts/policies-and-telemetry/#attributes)으로 추출할 수 있게 해 줍니다.
+Istio는 이 속성을 [Mixer](/docs/concepts/policies-and-telemetry/)에서 사용하여 정책을 적용하고, 속성을 모니터링 시스템에 보내 메쉬 전체의 동작에 대한 정보를 제공합니다.
 
-The sidecar proxy model also allows you to add Istio capabilities to an
-existing deployment with no need to rearchitect or rewrite code. You can read
-more about why we chose this approach in our [Design
-Goals](/docs/concepts/what-is-istio/#design-goals).
+sidecar로 배포된 proxy 모델은 코드 수정이나 구조 수정 없이 존재하는 배포에 Istio 기능을 추가할 수 있게 해 줍니다.
+왜 이러한 방식을 채택했는지에 대해[디자인 목표](/docs/concepts/what-is-istio/#design-goals)에서 볼 수 있습니다.
 
 ### Mixer
 
-[Mixer](/docs/concepts/policies-and-telemetry/) is a platform-independent
-component. Mixer enforces access control and usage policies across the service
-mesh, and collects telemetry data from the Envoy proxy and other services. The
-proxy extracts request level
-[attributes](/docs/concepts/policies-and-telemetry/#attributes), and sends them
-to Mixer for evaluation. You can find more information on this attribute
-extraction and policy evaluation in our [Mixer Configuration
-documentation](/docs/concepts/policies-and-telemetry/#configuration-model).
+[Mixer](/docs/concepts/policies-and-telemetry/)는 플랫폼에 독립적인 컴포넌트입니다.
+Mixer는 접근 제어와 사용량 정책을 서비스 메쉬에 적용하고 Envoy proxy와 다른 서비스로부터 원격 측정 데이터를 수집합니다.
+proxy는 요청 수준의 [속성](/docs/concepts/policies-and-telemetry/#attributes)을 추출하고 Mixer에게 보내 평가할 수 있게 합니다.
+속성 추출과 정책 평가에 대해 [Mixer 설정 문서](/docs/concepts/policies-and-telemetry/#configuration-model)에서 더 자세히 볼 수 있습니다.
 
-Mixer includes a flexible plugin model. This model enables Istio to interface
-with a variety of host environments and infrastructure backends. Thus, Istio
-abstracts the Envoy proxy and Istio-managed services from these details.
+Mixer는 유연한 플러그인 모델을 포함하고 있습니다.
+이 모델은 Istio가 다양한 호스트 환경과 인프라스트럭처 백엔드와 접속할 수 있게 해 줍니다.
+따라서, Istio는 이러한 호스트 환경과 인프라스트럭처 백엔드 정보로부터 Envoy proxy와 Istio가 관리하는 서비스를 추상화합니다.
 
 ### Pilot
 
-[Pilot](/docs/concepts/traffic-management/#pilot-and-envoy) provides
-service discovery for the Envoy sidecars, traffic management capabilities
-for intelligent routing (e.g., A/B tests, canary deployments, etc.),
-and resiliency (timeouts, retries, circuit breakers, etc.).
+[Pilot](/docs/concepts/traffic-management/#pilot-and-envoy)은 Envoy sidecar를 위한 서비스 디스커버리, 지능적인 라우팅을 위한 (A/B 테스트, canary 배포 등)트래픽 관리 기능, 그리고 복원력(타임아웃, 재시도, 회로 차단기 등)을 제공합니다.
 
-Pilot converts high level routing rules that control traffic behavior into
-Envoy-specific configurations, and propagates them to the sidecars at runtime.
-Pilot abstracts platform-specific service discovery mechanisms and synthesizes
-them into a standard format that any sidecar conforming with the [Envoy data
-plane APIs](https://github.com/envoyproxy/data-plane-api) can consume. This
-loose coupling allows Istio to run on multiple environments such as Kubernetes,
-Consul, or Nomad, while maintaining the same operator interface for traffic
-management.
+Pilot은 트래픽의 동작을 제어하는 고수준 라우팅 규칙을 Envoy에 특화된 설정으로 바꾸고 그 설정을 실행 중인 sidecar에 전파합니다.
+Pilot은 플랫폼에 특화된 서비스 디스커버리 메커니즘을 추상화하여 [Envoy 데이터 평면 API](https://github.com/envoyproxy/data-plane-api)를 만족하는 sidecar가 사용할 수 있는 표준 포맷으로 합성합니다.
+이러한 약한 결합은 Istio가 트래픽 관리를 위한 운영 인터페이스는 동일하게 유지한 채로 Kubernetes, Consul, Nomad와 같은 여러 환경에서 실행될 수 있게 합니다.
 
 ### Citadel
 
-[Citadel](/docs/concepts/security/) provides strong service-to-service and
-end-user authentication with built-in identity and credential management. You
-can use Citadel to upgrade unencrypted traffic in the service mesh. Using
-Citadel, operators can enforce policies based on service identity rather than
-on network controls. Starting from release 0.5, you can use
-[Istio's authorization feature](/docs/concepts/security/#authorization) to control
-who can access your services.
+[Citadel](/docs/concepts/security/)은 내재된 신원과 자격 관리 기능을 사용하여 강한 서비스 간과 말단 사용자 인증을 제공합니다.
+Citadel을 사용하여 서비스 메쉬 내부의 암호화되지 않은 트래픽을 업그레이드 할 수 있습니다.
+Citadel을 사용하여 운영자는 네트워크 제어에 기반하는 것이 아닌, 서비스 신원에 따른 정책을 적용할 수 있습니다.
+0.5 버전 부터, [Istio의 인증 기능](/docs/concepts/security/#authorization)을 사용하여 서비스를 사용할 수 있는 사용자를 제어할 수 있습니다.
 
 ### Galley
 
-Galley validates user authored Istio API configuration on behalf of
-the other Istio control plane components. Over time, Galley will take
-over responsibility as the top-level configuration ingestion, processing and
-distribution component of Istio. It will be responsible for insulating
-the rest of the Istio components from the details of obtaining user
-configuration from the underlying platform (e.g. Kubernetes).
+Galley는 다른 제어 평면 컴포넌트를 위해 사용자 인증된 Istio API 설정을 검증합니다.
+시간이 지나면 Galley가 Istio의 최상위 수준의 설정 섭취, 처리, 분배 컴포넌트가 될 것입니다.
+Galley가 Kubernetes와 같은 기반 플랫폼으로부터 사용자 설정을 얻는 작업으로 부터 다른 Istio 컴포넌트를 격리 시켜줄 것입니다.
 
-## Design Goals
+## 디자인 목표
 
-A few key design goals informed Istio’s architecture. These goals are essential
-to making the system capable of dealing with services at scale and with high
-performance.
+몇몇 핵심 디자인 목표가 Istio의 구조를 만들었습니다.
+이러한 목표는 대규모 서비스를 고성능으로 다루어야 하는 시스템을 만드는 데 필수적입니다.
 
-* **Maximize Transparency**: To adopt Istio, an operator or developer is
-  required to do the minimum amount of work possible to get real value from the
-  system. To this end, Istio can automatically inject itself into all the
-  network paths between services. Istio uses sidecar proxies to capture traffic
-  and, where possible, automatically program the networking layer to route
-  traffic through those proxies without any changes to the deployed application
-  code. In Kubernetes, the proxies are injected into pods and traffic is
-  captured by programming ``iptables`` rules. Once the sidecar proxies are
-  injected and traffic routing is programmed, Istio can mediate all traffic.
-  This principle also applies to performance. When applying Istio to a
-  deployment, operators see a minimal increase in resource costs for the
-  functionality being provided. Components and APIs must all be designed with
-  performance and scale in mind.
+* **투명성을 최대화**: Istio를 채택하기 위해서 운영자나 개발자는 시스템에서 실제 결과를 얻어내기 위해 최소한의 작업만 할 수 있어야 합니다.
+  이런 면에서 Istio는 서비스 사이의 네트워크 경로 모두에 자동으로 자신을 주입할 수 있습니다.
+  Istio는 sidecar proxy를 사용하여 트래픽을 수집하고 가능하다면 자동으로 네트워킹 단을 프로그램하여 배포된 어플리케이션 코드에 수정 없이 proxy를 사용하여 트래픽을 라우팅할 수 있게 해 줍니다.
+  Kubernetes에서 proxy는 pod에 주입되고 트래픽은 ``iptables`` 규칙을 프로그래밍 함으로써 수집합니다.
+  sidecar proxy가 주입되고 트래픽 라우팅이 프로그램되면 Istio는 트래픽을 중재할 수 있습니다.
+  이 원칙은 성능에도 적용됩니다.
+  Istio를 배포에 적용하면 운영자는 제공되는 기능에 대해 최소한의 자원 소비량의 증가 만을 보게 됩니다.
+  컴포넌트와 API는 반드시 성능과 확장을 고려하여 설계되어야 합니다.
 
-* **Incrementality**: As operators and developers become more dependent on the
-  functionality that Istio provides, the system must grow with their needs.
-  While we continue to add new features, the greatest need is the ability to
-  extend the policy system, to integrate with other sources of policy and
-  control, and to propagate signals about mesh behavior to other systems for
-  analysis. The policy runtime supports a standard extension mechanism for
-  plugging in other services. In addition, it allows for the extension of its
-  vocabulary to allow policies to be enforced based on new signals that the
-  mesh produces.
+* **점증성**: 운영자와 개발자가 Istio가 제공하는 기능에 의존적이 될 수록 시스템은 그들의 요구를 충족할 수 있게 자라야 합니다.
+  계속해서 새 기능을 추가하는 동안, 가장 큰 요구는 정책 시스템을 확장하여 다른 정책과 제어를 제공하는 것과 융합하는 것, 그리고 메쉬의 동작에 대한 신호를 다른 시스템에 보내 분석하는 것입니다.
+  정책 런타임은 다른 서비스에 연결할 수 있는 표준 확장 메커니즘을 지원합니다
+  게다가 정책 런타임은 자신이 사용하는 단어를 확장하여 메쉬가 생성하는 새로운 신호에 대한 정책을 만들 수 있게 해줍니다.
 
-* **Portability**: The ecosystem in which Istio is used varies along many
-  dimensions. Istio must run on any cloud or on-premises environment with
-  minimal effort. The task of porting Istio-based services to new environments
-  must be trivial. Using Istio, you are able to operate a single service
-  deployed into multiple environments. For example, you can deploy on multiple
-  clouds for redundancy.
+* **이식성**: Istio가 사용되는 생태계는 여러 차원으로 다양합니다.
+  Istio는 어떤 cloud나 on-premise 환경에서도 최소의 노력만으로 실행되어야 합니다.
+  Istio 기반의 서비스를 새로운 환경에 이식하는 것은 아주 간단한 일이어야 합니다.
+  Istio를 사용하면 당신은 여러 환경에 배포된 하나의 서비스를 운영할 수 있습니다.
+  예를 들면, 서비스의 중첩을 만들기 위해 여러 cloud에 배포할 수 있습니다.
 
-* **Policy Uniformity**: The application of policy to API calls between
-  services provides a great deal of control over mesh behavior. However, it can
-  be equally important to apply policies to resources which are not necessarily
-  expressed at the API level. For example, applying a quota to the amount of
-  CPU consumed by an ML training task is more useful than applying a quota to
-  the call which initiated the work. To this end, Istio maintains the policy
-  system as a distinct service with its own API rather than the policy system
-  being baked into the proxy sidecar, allowing services to directly integrate
-  with it as needed.
+* **정책 균등성**:  서비스 사이의 API 요청에 대한 정책의 활용은 메쉬의 동작에 대한 많은 제어를 제공합니다
+  하지만 API 수준에서 표현되지만은 않는 자원에 정책을 적용하는 것 또한 동등하게 중요합니다.
+  예를 들면, 기계 학습 훈련 작업에 사용한 CPU 사용량에 자원 할당량을 적용하는 것은 그 작업을 시작하는 요청에 할당량을 적용하는 것 보다 유용하다.
+  이런 점에서, Istio는 정책 시스템을 proxy sidecar에 넣는 것 보다는 자신만의 API를 가지는 별개의 서비스로 관리하여 서비스가 필요하다면 직접 통합할 수 있게 합니다.

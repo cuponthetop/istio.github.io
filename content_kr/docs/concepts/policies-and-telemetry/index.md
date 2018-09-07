@@ -1,6 +1,6 @@
 ---
-title: Policies and Telemetry
-description: Describes the policy enforcement and telemetry mechanisms.
+title: 정책과 원격 측정
+description: 정책 적용과 원격 측정 메커니즘을 설명합니다.
 weight: 40
 keywords: [policies,telemetry,control,config]
 aliases:

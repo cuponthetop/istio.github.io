@@ -1,6 +1,6 @@
 ---
-title: Security
-description: Describes Istio's authorization and authentication functionality.
+title: 보안
+description: Istio의 인증과 인가 기능을 설명합니다.
 weight: 30
 keywords: [security,authentication,authorization,rbac,access-control]
 aliases:
