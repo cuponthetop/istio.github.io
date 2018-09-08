@@ -40,7 +40,7 @@ sidecar buffers outgoing telemetry such that it only calls Mixer infrequently.
 
 At a high level, Mixer provides:
 
-* **Backend Abstraction**. Mixer insulates the rest of Istio from the implementation details of individual infrastructure backends.
+* **Backend 추상화**. Mixer insulates the rest of Istio from the implementation details of individual infrastructure backends.
 
 * **Intermediation**. Mixer allows operators to have fine-grained control over all interactions between the mesh and infrastructure backends.
 
@@ -50,7 +50,7 @@ Policy enforcement and telemetry collection are entirely driven from configurati
 It's possible to [completely disable these features](/docs/setup/kubernetes/helm-install/#customization-example-traffic-management-minimal-set)
 and avoid the need to run the Mixer component in an Istio deployment.
 
-## Adapters
+## 어댑터<sub>Adapter</sub>
 
 Mixer is a highly modular and extensible component. One of its key functions is
 to abstract away the details of different policy and telemetry backend systems,
@@ -72,16 +72,16 @@ extended to target new or custom infrastructure backends.
 
 Learn more about the [set of supported adapters](/docs/reference/config/policy-and-telemetry/adapters/).
 
-## Reliability and latency
+## 신뢰성<sub>Reliability</sub>과 지연<sub>latency</sub>
 
 Mixer is a highly available component whose design helps increase overall availability and reduce average latency
 of services in the mesh. Key aspects of its design deliver these benefits:
 
-* **Statelessness**. Mixer is stateless in that it doesn’t manage any persistent storage of its own.
+* **무상태<sub>Statelessness</sub>**. Mixer is stateless in that it doesn’t manage any persistent storage of its own.
 
 * **Hardening**. Mixer proper is designed to be a highly reliable component. The design intent is to achieve > 99.999% uptime for any individual Mixer instance.
 
-* **Caching and Buffering**. Mixer is designed to accumulate a large amount of transient ephemeral state.
+* **캐싱과 버퍼링**. Mixer is designed to accumulate a large amount of transient ephemeral state.
 
 The sidecar proxies that sit next to each service instance in the mesh must necessarily be frugal in terms of memory consumption, which constrains the possible amount of local
 caching and buffering. Mixer, however, lives independently and can use considerably larger caches and output buffers. Mixer thus acts as a highly-scaled and highly-available second-level
@@ -99,7 +99,7 @@ even when a backend has become unresponsive.
 Finally, Mixer's caching and buffering helps reduce the frequency of calls to backends, and can sometimes reduce the amount of data
 sent to backends (through local aggregation). Both of these can reduce operational expense in certain cases.
 
-## Attributes
+## 속성<sub>Attribute</sub>
 
 Attributes are an essential concept to Istio's policy and telemetry functionality.
 An attribute is a small bit of data that describes a single property of a specific
@@ -131,7 +131,7 @@ given, Mixer generates calls to a variety of infrastructure backends.
     caption="Attribute Machine"
     >}}
 
-### Attribute vocabulary
+### 속성 어휘
 
 A given Istio deployment has a fixed vocabulary of attributes that it understands.
 The specific vocabulary is determined by the set of attribute producers being used
@@ -140,7 +140,7 @@ specialized Mixer adapters can also generate attributes.
 
 Learn more about the [common baseline set of attributes available in most Istio deployments](/docs/reference/config/policy-and-telemetry/attribute-vocabulary/).
 
-### Attribute expressions
+### 속성 표현
 
 Attribute expressions are used when configuring [instances](#instances).
 Here's an example use of expressions:
@@ -165,7 +165,7 @@ is not present, the literal `"unknown"` is used.
 
 Refer to the [attribute expression](/docs/reference/config/policy-and-telemetry/expression-language/) page for details.
 
-## Configuration model
+## 설정 모델
 
 Istio's policy and telemetry features are configured through a common model designed to
 put operators in control of every aspect of authorization policy and telemetry collection.
@@ -191,12 +191,12 @@ For example, a rule might send generated `requestcount` metric instances to a `s
 
 Configuration is based on *adapters* and *templates*:
 
-* **Adapters** encapsulate the logic necessary to interface Mixer with a specific infrastructure backend.
+* **어댑터** encapsulate the logic necessary to interface Mixer with a specific infrastructure backend.
 
-* **Templates** define the schema for specifying request mapping from attributes to adapter inputs.
+* **템플릿** define the schema for specifying request mapping from attributes to adapter inputs.
 A given adapter may support any number of templates.
 
-### Handlers
+### 핸들러
 
 Adapters encapsulate the logic necessary to interface Mixer with specific external infrastructure
 backends such as [Prometheus](https://prometheus.io) or [Stackdriver](https://cloud.google.com/logging).
@@ -252,7 +252,7 @@ spec:
 Each adapter defines its own particular format of configuration data. Learn more about [the full set of
 adapters and their specific configuration formats](/docs/reference/config/policy-and-telemetry/adapters/).
 
-### Instances
+### 인스턴스
 
 Instance configuration specifies the request mapping from attributes to adapter inputs.
 The following is an example of a metric instance configuration that produces the `requestduration` metric.
@@ -276,7 +276,7 @@ Note that all the dimensions expected in the handler configuration are specified
 Templates define the specific required content of individual instances. Learn more about the [set of
 templates and their specific configuration formats](/docs/reference/config/policy-and-telemetry/templates/).
 
-### Rules
+### 규칙
 
 Rules specify when a particular handler is invoked with a specific instance.
 Consider an example where you want to deliver the `requestduration` metric to the `prometheus` handler if
